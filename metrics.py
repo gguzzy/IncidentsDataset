@@ -136,6 +136,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
     Returns:
         float: incident mAP + place mAP
     """
+
     if epoch is None:
         raise NotImplementedError(
             "Not implemented for epoch==None")

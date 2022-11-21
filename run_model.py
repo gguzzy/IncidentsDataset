@@ -99,6 +99,7 @@ def train(args, train_loader, all_models, optimizer, epoch):
         end_time = time.time()
 
         if batch_iteration % args.print_freq == 0:
+            print("Accuracy from train loader")
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {a_v_batch_time.val:.3f} ({a_v_batch_time.avg:.3f})\t'
                   'Data {a_v_data_time.val:.3f} ({a_v_data_time.avg:.3f})\t'
@@ -217,14 +218,17 @@ def main():
     train_loader = get_dataset(args, is_train=True)
     print("loading val_loader")
     val_loader = get_dataset(args, is_train=False)  # TODO: don't shuffle
-
-    for epoch in range(args.start_epoch, args.epochs):
+    
+    for epoch in range(0, args.epochs):
 
         # train for an epoch
-        train(args, train_loader, all_models, optimizer, epoch)        
-
+        train(args, train_loader, all_models, optimizer, epoch)
+       
+        
         # evaluate on validation set
+        print("Accuracy from val loader")
         mean_ap = validate(args, val_loader, all_models, epoch=epoch, writer=writer)
+        
 
         # remember best prec@1 and save checkpoint
         is_best = mean_ap > best_mean_ap

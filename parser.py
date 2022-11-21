@@ -34,7 +34,7 @@ def get_parser():
                         default="train",
                         required=True,
                         type=str,
-                        choices=["train", "test"],
+                        choices=["train", "test", "val"],
                         help="How to use the model, such as 'train' or 'test'.")
     parser.add_argument("--checkpoint_path",
                         default="pretrained_weights/",
