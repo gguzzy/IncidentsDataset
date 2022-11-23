@@ -15,7 +15,7 @@ def delete_images(df, path_to_images):
         deleted_images += 1
 
         if deleted_images % 1000 == 0:
-            print("Deleted {} images".format(index))
+            print("Deleted {} images".format(deleted_images))
 
 
 def rename_images(df: pd.DataFrame, path_to_images: str):

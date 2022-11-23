@@ -32,7 +32,7 @@ if "valid_image" not in df.columns:
 df
 
 # %%
-df["downloadable"] = df["image_id"].apply(lambda x: x.isnumeric() == False)
+df["downloadable"] = df["image_id"].apply(lambda x: x.isnumeric() == False and x != "-1")
 df
 
 # %%
