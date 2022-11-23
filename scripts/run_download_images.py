@@ -16,18 +16,21 @@ def download_image_from_url(url):
 
         if r.status_code == 200:
             # download the image
-            #open("data/images/" + uuid_str + ".jpg", "wb").write(r.content)
+            open("data/images/" + uuid_str + ".jpg", "wb").write(r.content)
             return 200
         else:
             return r.status_code
     except Exception:
         return -1
 
-def download_images(dataset_name):
+def download_images(dataset_name, limit=-1):
     path = f"data/{dataset_name}.pkl"
     print(f"Loading {dataset_name} data from {path}...")
 
     df = pd.read_pickle(path)
+
+    if limit > 0:
+        df = df.sample(limit, random_state=limit)
 
     print("Running image url download...")
     urls = df["url"]
