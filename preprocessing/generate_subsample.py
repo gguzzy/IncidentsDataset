@@ -22,11 +22,11 @@ def main():
         df = df.sample(args.num_samples, random_state=args.num_samples)
     
     if not args.ignore_unknown_classes:
-        df = df[df["incidents_list"] != "unknown"]
+        df = df[(df["incidents_list"] != "unknown") & df["places_list"] != "unknown"]
 
     # Save df to json with line formatting
     values_dict = df[["incidents", "places"]].to_dict(orient="records")
-    final_dict = {k+".jpg": v for k, v in zip(df["image_id"], values_dict)}
+    final_dict = {k: v for k, v in zip(df["key"], values_dict)}
 
     # Save final_dict to json
     with open(args.output_file, "w") as f:
