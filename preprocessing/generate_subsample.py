@@ -25,7 +25,7 @@ def main():
         df = df[df["incidents_list"] != "unknown"]
 
     # Save df to json with line formatting
-    values_dict = df.to_dict(orient="records")
+    values_dict = df[["incidents", "places"]].to_dict(orient="records")
     final_dict = {k+".jpg": v for k, v in zip(df["image_id"], values_dict)}
 
     # Save final_dict to json
