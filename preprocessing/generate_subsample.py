@@ -17,13 +17,13 @@ def main():
 
     df = pd.read_pickle(args.pickle_file)
     df = df[df["valid_image"] == True]
-
-    if args.num_samples > 0:
-        df = df.sample(args.num_samples, random_state=args.num_samples)
     
     if args.ignore_unknown_classes:
         df = df[(df["incidents_list"] != "unknown") & df["places_list"] != "unknown"]
 
+    if args.num_samples > 0:
+        df = df.sample(args.num_samples, random_state=args.num_samples)
+    
     # Save df to json with line formatting
     values_dict = df[["incidents", "places"]].to_dict(orient="records")
     final_dict = {k: v for k, v in zip(df["key"], values_dict)}
