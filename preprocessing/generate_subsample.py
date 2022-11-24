@@ -11,8 +11,8 @@ def main():
     parser.add_argument('--output-file', type=str, default="../data/multi_label_train_v0.x.json",
                         help='Path to output json file')
     parser.add_argument('--num-samples', type=int, default=-1, help='Number of samples to take')
-    parser.add_argument('--ignore-unknown-classes', default=True,
-                        help='Include unknown classes', action='store_false')
+    parser.add_argument('--ignore-unknown-classes', default=False,
+                        help='Ignore unknown classes', action='store_true')
     args = parser.parse_args()
 
     df = pd.read_pickle(args.pickle_file)
@@ -21,7 +21,7 @@ def main():
     if args.num_samples > 0:
         df = df.sample(args.num_samples, random_state=args.num_samples)
     
-    if not args.ignore_unknown_classes:
+    if args.ignore_unknown_classes:
         df = df[(df["incidents_list"] != "unknown") & df["places_list"] != "unknown"]
 
     # Save df to json with line formatting
