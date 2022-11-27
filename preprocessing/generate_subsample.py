@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import argparse
+from typing import List
 
 
 def save_df(df: pd.DataFrame, output_file: str):
@@ -13,7 +14,7 @@ def save_df(df: pd.DataFrame, output_file: str):
         json.dump(final_dict, f)
 
 
-def filter_df(df: pd.DataFrame, ignore_incidents: list[str], ignore_places: list[str]):
+def filter_df(df: pd.DataFrame, ignore_incidents: List[str], ignore_places: List[str]):
     df = df[~df["incidents_list"].apply(lambda x: any([i in ignore_incidents for i in x.split(", ")]))].copy()
     df = df[~df["places_list"].apply(lambda x: any([i in ignore_places for i in x.split(", ")]))].copy()
 
@@ -46,7 +47,7 @@ def main():
 
         val_df = df.sample(frac=1 - args.train_validation_split, random_state=42)
         val_df = filter_df(val_df, args.ignore_incidents, args.ignore_places)
-        save_df(val_df, args.output_file.replace(".json", "_val.json"))
+        save_df(val_df, args.output_file.replace("train.json", "val.json"))
         df = df.drop(val_df.index)
 
     df = filter_df(df, args.ignore_incidents, args.ignore_places)
