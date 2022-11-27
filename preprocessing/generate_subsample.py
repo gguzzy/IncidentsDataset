@@ -12,6 +12,8 @@ def save_df(df: pd.DataFrame, output_file: str):
     # Save final_dict to json
     with open(output_file, "w") as f:
         json.dump(final_dict, f)
+    
+    print(f"Saved {len(final_dict)} samples to {output_file} successfully.")
 
 
 def filter_df(df: pd.DataFrame, ignore_incidents: List[str], ignore_places: List[str]):
