@@ -10,7 +10,8 @@ CHOICES_DATA_USED = [
 ]
 CHOICES_ARCHITECTURES = [
     "resnet18",
-    "resnet50"
+    "resnet50",
+    "vit-16-384"
 ]
 CHOICES_ACTIVATION = [
     "softmax",

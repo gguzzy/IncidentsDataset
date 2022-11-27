@@ -12,6 +12,7 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
 from skimage import io
+from torchsummary import summary
 
 import numpy as np
 import os
@@ -70,6 +71,11 @@ class FilenameDataset(data.Dataset):
 
 
 def get_trunk_model(args):
+    if args.arch == "vit-16-384":
+      model = models.vit_b_16(weights="IMAGENET1K_V1")
+      model.heads.append(nn.Linear(1000, 1024))
+      model = nn.Sequential(model, nn.ReLU())
+      return model
     if args.pretrained_with_places:
         print("loading places weights for pretraining")
         model = models.__dict__[args.arch](num_classes=365)

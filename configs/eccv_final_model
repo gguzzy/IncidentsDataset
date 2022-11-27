@@ -1,9 +1,9 @@
 batch_size=256
 lr=0.0001
 dataset=pos_and_neg
-activation=sigmoid
+activation=softmax
 epochs=10
 arch=resnet50
-dataset_train=./data/new_eccv_train.json
-dataset_val=./data/new_eccv_val.json
-dataset_test=./data/new_eccv_val.json
+dataset_train=IncidentsDataset/data/new_eccv_train.json
+dataset_val=IncidentsDataset/data/new_eccv_val.json
+dataset_test=IncidentsDataset/data/new_eccv_val.json
