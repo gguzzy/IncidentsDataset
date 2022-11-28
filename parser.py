@@ -55,15 +55,15 @@ def get_parser():
                         default="data/eccv_test.json")
 
     parser.add_argument('--num_gpus',
-                        default=4,
+                        default=1,
                         type=int,
                         help='Number of gpus to use.')
     parser.add_argument('-b',
                         '--batch_size',
-                        default=256,
+                        default=16,
                         type=int,
                         metavar='N',
-                        help='mini-batch size (default: 256)')
+                        help='mini-batch size (default: 16)')
     parser.add_argument('--loss',
                         type=str,
                         choices=CHOICES_LOSSES)
@@ -92,7 +92,7 @@ def get_parser():
                         type=str)
     parser.add_argument('-j',
                         '--workers',
-                        default=16,
+                        default=2,
                         type=int,
                         metavar='N',
                         help='number of data loading workers (default: 4)')
@@ -120,7 +120,7 @@ def get_parser():
                         help='weight decay (default: 1e-4)')
     parser.add_argument('--print-freq',
                         '-p',
-                        default=10,
+                        default=50,
                         type=int,
                         metavar='N',
                         help='print frequency (default: 10)')
