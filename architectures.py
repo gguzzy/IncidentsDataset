@@ -69,14 +69,13 @@ class FilenameDataset(data.Dataset):
 
 # Modified by US for the ViT part
 def get_trunk_model(args):
-    if args.arch == "vit-16-384":
+    if args.arch == "vit_l_16":
       # Pretrained ViT model from ImageNet1K
-      model = models.vit_b_16(weights="IMAGENET1K_V1")
-      print("**** For now the ViT is pre-trained with ImageNet1K ****")
+      model = models.vit_l_16(weights="IMAGENET1K_V1")
+      print("**** Load ViT pre-trained on ImageNet1K ****")
       # I don't know it i dont write def weights this is random or pretrained
       # model = models.vit_b_16()
       # Freeze the model_parameters except the last one
-      print("**** Try to freeze ****")
       for name, child in model.named_children():
             print(f"Name: {name}")
             print(f"child: {child}")
@@ -84,7 +83,7 @@ def get_trunk_model(args):
               break
             for params in child.parameters():
                 params.requires_grad = False
-      print("**** Model loaded and freezed, except last layer ( I hope ) ****")
+      print("**** Model loaded and freezed, except last layer ****")
       model.heads.append(nn.Linear(1000, 1024))
       model = nn.Sequential(model, nn.ReLU())
       print("**** Added linear layer + Relu activation successfully ****")
