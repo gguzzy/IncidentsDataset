@@ -1,9 +1,9 @@
-batch_size=256
+batch_size=32
 lr=0.0001
 dataset=pos_and_neg
 activation=sigmoid
-epochs=10
-arch=vit-16-384
+epochs=5
+arch=vit_l_16
 dataset_train=./data/new_multi_label_train.json
 dataset_val=./data/new_multi_label_val.json
 dataset_test=./data/new_multi_label_val.json
