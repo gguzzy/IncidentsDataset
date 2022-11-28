@@ -197,18 +197,18 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
           print(f"> Target incidents: {target_i_v[i]}\n\n")'''
         right_a = 0
         right_b = 0
-        unkonw = 0 
+        unknown = 0 
         for i in range(incident_output.shape[0]):
           if (torch.max(target_i_v[i]) == 0):
-            unkonw += 1
+            unknown += 1
             if(torch.max(incident_output[i]) <= 2):
               right_a += 1
           else:
             if(torch.max(incident_output[i]) > 2):
               right_b += 1
         print(f">>> Binary classification : {(right_a + right_b)/incident_output.shape[0]}%")
-        print(f">>> P Unkown/R unknown  : {right_a/unkonw}%")
-        print(f">>> Percentage real known  : {unkonw/incident_output.shape[0]}%")
+        if unknown != 0: print(f">>> P Unkown/R unknown  : {right_a/unknown}%")
+        print(f">>> Percentage real known  : {unknown/incident_output.shape[0]}%")
         
 
 
