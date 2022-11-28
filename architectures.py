@@ -11,8 +11,6 @@ import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
-from skimage import io
-from torchsummary import summary
 
 import numpy as np
 import os
