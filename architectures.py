@@ -179,11 +179,11 @@ def update_incidents_model_with_checkpoint(incidents_model, args):
     best_str = "_best" if args.mode == "test" else ""
 
     trunk_resume = os.path.join(
-        args.checkpoint_path, "{}_trunk{}.pth.tar".format(args.config.split("/")[-1], best_str))
+        args.checkpoint_path, "trunk{}.pth.tar".format(best_str))
     place_resume = os.path.join(
-        args.checkpoint_path, "{}_place{}.pth.tar".format(args.config.split("/")[-1], best_str))
+        args.checkpoint_path, "place{}.pth.tar".format(best_str))
     incident_resume = os.path.join(
-        args.checkpoint_path, "{}_incident{}.pth.tar".format(args.config.split("/")[-1], best_str))
+        args.checkpoint_path, "incident{}.pth.tar".format(best_str))
 
     # trunk_resume = "/data/vision/torralba/scratch/ethanweber/DamageAssessment/external/IncidentsDataset/pretrained_weights/eccv_final_model_trunk.pth.tar"
     # place_resume = "/data/vision/torralba/scratch/ethanweber/DamageAssessment/external/IncidentsDataset/pretrained_weights/eccv_final_model_place.pth.tar"
