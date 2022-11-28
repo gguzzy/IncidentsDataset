@@ -1,5 +1,3 @@
-batch_size=16
-lr=0.0001
 dataset=pos_and_neg
 activation=sigmoid
 epochs=10
