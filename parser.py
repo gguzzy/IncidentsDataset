@@ -11,7 +11,7 @@ CHOICES_DATA_USED = [
 CHOICES_ARCHITECTURES = [
     "resnet18",
     "resnet50",
-    "vit-16-384"
+    "vit_l_16"
 ]
 CHOICES_ACTIVATION = [
     "softmax",
