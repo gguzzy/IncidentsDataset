@@ -77,8 +77,8 @@ def get_trunk_model(args):
       # model = models.vit_b_16()
       # Freeze the model_parameters except the last one
       for name, child in model.named_children():
-            print(f"Name: {name}")
-            print(f"child: {child}")
+            #print(f"Name: {name}")
+            #print(f"child: {child}")
             if name == 'heads':
               break
             for params in child.parameters():
