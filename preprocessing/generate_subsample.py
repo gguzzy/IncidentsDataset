@@ -60,20 +60,22 @@ def main():
     df = df[df["valid_image"] == True].copy()
 
     if args.copy_images and args.num_samples > 0:
-        copy_images_path = os.path.join(os.path.join(os.path.sep.join(args.output_file.split(os.path.sep)[:-1])), f"subsample_images")
+        copy_images_path = os.path.join(os.path.join(os.path.sep.join(
+            args.output_file.split(os.path.sep)[:-1])), f"subsample_images")
+
+    df = filter_df(df, args.ignore_incidents, args.ignore_places, args.num_samples)
+    print(f"Filtered df to {len(df)} samples.")
 
     if args.train_validation_split < 1.0:
         print("Train-validation split is set to {}.".format(args.train_validation_split))
         print("The validation set will be saved in a separate file.")
 
         val_df = df.sample(frac=1 - args.train_validation_split, random_state=42)
-        val_df = filter_df(val_df, args.ignore_incidents, args.ignore_places, num_samples=args.num_samples)
         save_df(val_df, args.output_file.replace("train.json", "val.json"))
         if args.copy_images and args.num_samples > 0:
             copy_images_from_df(val_df, copy_images_path)
         df = df.drop(val_df.index)
 
-    df = filter_df(df, args.ignore_incidents, args.ignore_places, num_samples=args.num_samples)
     save_df(df, args.output_file)
     if args.copy_images and args.num_samples > 0:
         copy_images_from_df(df, copy_images_path)
