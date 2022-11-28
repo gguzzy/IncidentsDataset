@@ -1,7 +1,7 @@
 batch_size=256
 lr=0.0001
 dataset=pos_and_neg
-activation=softmax
+activation=sigmoid
 epochs=10
 arch=vit-16-384
 dataset_train=./data/new_multi_label_train.json
