@@ -20,10 +20,12 @@ def save_df(df: pd.DataFrame, output_file: str):
     print(f"Saved {len(final_dict)} samples to {output_file} successfully.")
 
 
-def filter_df(df: pd.DataFrame, ignore_incidents: List[str], ignore_places: List[str]):
+def filter_df(df: pd.DataFrame, ignore_incidents: List[str], ignore_places: List[str], num_samples: int = -1):
     df = df[~df["incidents_list"].apply(lambda x: any([i in ignore_incidents for i in x.split(", ")]))].copy()
     df = df[~df["places_list"].apply(lambda x: any([i in ignore_places for i in x.split(", ")]))].copy()
 
+    if num_samples > 0:
+        df = df.sample(n=num_samples, random_state=42).copy()
     return df
 
 
@@ -57,9 +59,6 @@ def main():
     df = pd.read_pickle(args.pickle_file)
     df = df[df["valid_image"] == True].copy()
 
-    if args.num_samples > 0:
-        df = df.sample(n=args.num_samples, random_state=42).copy()
-
     if args.copy_images and args.num_samples > 0:
         copy_images_path = os.path.join(os.path.join(args.output_file.split(os.path.sep)[:-1]), f"subsample_images")
         print(f"Copying subsample images to {copy_images_path}")
@@ -69,13 +68,13 @@ def main():
         print("The validation set will be saved in a separate file.")
 
         val_df = df.sample(frac=1 - args.train_validation_split, random_state=42)
-        val_df = filter_df(val_df, args.ignore_incidents, args.ignore_places)
+        val_df = filter_df(val_df, args.ignore_incidents, args.ignore_places, num_samples=args.num_samples)
         save_df(val_df, args.output_file.replace("train.json", "val.json"))
         if args.copy_images and args.num_samples > 0:
             copy_images_from_df(val_df, copy_images_path)
         df = df.drop(val_df.index)
 
-    df = filter_df(df, args.ignore_incidents, args.ignore_places)
+    df = filter_df(df, args.ignore_incidents, args.ignore_places, num_samples=args.num_samples)
     save_df(df, args.output_file)
     if args.copy_images and args.num_samples > 0:
         copy_images_from_df(df, copy_images_path)
