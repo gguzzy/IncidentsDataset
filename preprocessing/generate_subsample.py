@@ -30,11 +30,11 @@ def filter_df(df: pd.DataFrame, ignore_incidents: List[str], ignore_places: List
 
 
 def copy_images_from_df(df: pd.DataFrame, output_dir: str):
-
-    base_image_dir = os.path.join(os.path.join(output_dir.split(os.path.sep)[:-1]), "images")
+    base_image_dir = os.path.join(os.path.join(os.path.sep.join(output_dir.split(os.path.sep)[:-1])), "images")
     os.makedirs(output_dir, exist_ok=True)
+    print(f"Copying images from {base_image_dir} to {output_dir}...")
     for image_id in tqdm(df["key"]):
-        shutil.copy(os.path.join(base_image_dir, {image_id}), os.path.join(output_dir, f"{image_id}.jpg"))
+        shutil.copy(os.path.join(base_image_dir, image_id), os.path.join(output_dir, image_id))
 
 
 def main():
@@ -60,8 +60,7 @@ def main():
     df = df[df["valid_image"] == True].copy()
 
     if args.copy_images and args.num_samples > 0:
-        copy_images_path = os.path.join(os.path.join(args.output_file.split(os.path.sep)[:-1]), f"subsample_images")
-        print(f"Copying subsample images to {copy_images_path}")
+        copy_images_path = os.path.join(os.path.join(os.path.sep.join(args.output_file.split(os.path.sep)[:-1])), f"subsample_images")
 
     if args.train_validation_split < 1.0:
         print("Train-validation split is set to {}.".format(args.train_validation_split))
