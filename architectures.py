@@ -73,8 +73,7 @@ def get_trunk_model(args):
       # Pretrained ViT model from ImageNet1K
       model = models.vit_l_16(weights="IMAGENET1K_V1")
       print("**** Load ViT pre-trained on ImageNet1K ****")
-      # I don't know it i dont write def weights this is random or pretrained
-      # model = models.vit_b_16()
+      # model = models.vit_b_16() #SMALLER MODEL
       # Freeze the model_parameters except the last one
       model.heads.append(nn.Linear(1000, 1024))
       model.heads.append(nn.ReLU())
@@ -83,7 +82,8 @@ def get_trunk_model(args):
             #print(f"Name: {name}")
             #print(f"child: {child}")
             if name == "heads":
-                continue
+                pass
+                print("Trainable block: ", child)
             for params in child.parameters():
                 params.requires_grad = False
       print("**** Model loaded and freezed, except last layer ****")
