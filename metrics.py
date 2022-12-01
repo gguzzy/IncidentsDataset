@@ -183,34 +183,6 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
         output = trunk_model(image_v)
         place_output = place_model(output)
         incident_output = incident_model(output)
-        
-        # DEBUG - stupid method for Open set evaluation (threshold) ( on purpose on a single batch)
-        '''print(f"> Shape of incidents_output: {incident_output.shape[0]}")
-        print(f"> Shape of incidents_output 0: {incident_output[0].shape}")
-        for i in range(incident_output.shape[0]):
-          print(f"> Incident output {i}: {incident_output[i]}")
-          print(f"> Incident max value: {torch.max(incident_output[i])}")
-          if (torch.max(target_i_v[i]) == 0):
-            print("> This shold be 'unknown'")
-          else:
-            print("> This should be known")
-          print(f"> Target incidents: {target_i_v[i]}\n\n")'''
-        right_a = 0
-        right_b = 0
-        unknown = 0 
-        for i in range(incident_output.shape[0]):
-          if (torch.max(target_i_v[i]) == 0):
-            unknown += 1
-            if(torch.max(incident_output[i]) <= 2):
-              right_a += 1
-          else:
-            if(torch.max(incident_output[i]) > 2):
-              right_b += 1
-        print(f">>> Binary classification : {(right_a + right_b)/incident_output.shape[0]}%")
-        if unknown != 0: print(f">>> P Unkown/R unknown  : {right_a/unknown}%")
-        print(f">>> Percentage real known  : {unknown/incident_output.shape[0]}%")
-        
-
 
         # get the loss
         loss, incident_output, place_output = get_loss(args,
