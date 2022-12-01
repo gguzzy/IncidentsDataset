@@ -79,7 +79,7 @@ def get_trunk_model(args):
       for name, child in model.named_children():
             # print(f"Name: {name}")
             # print(f"child: {child}")
-            if name.startswith("heads"):
+            if name == "heads":
                 continue
             for params in child.parameters():
                 params.requires_grad = False
