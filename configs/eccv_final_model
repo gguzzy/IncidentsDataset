@@ -1,9 +1,0 @@
-batch_size=256
-lr=0.0001
-dataset=pos_and_neg
-activation=sigmoid
-epochs=10
-arch=resnet50
-dataset_train=./data/new_eccv_train.json
-dataset_val=./data/new_eccv_val.json
-dataset_test=./data/new_eccv_val.json
