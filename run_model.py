@@ -188,13 +188,22 @@ def main():
 
     # define the optimizer
     # https://pytorch.org/docs/stable/optim.html#per-parameter-options
-    optimizer = torch.optim.Adam(
-        [
-            {'params': trunk_model.module.heads.parameters()},
-            {'params': incident_layer.parameters()},
-            {'params': place_layer.parameters()}
-        ],
-        lr=args.lr)
+    if args.arch == "resnet18":
+      optimizer = torch.optim.Adam(
+          [
+              {'params': trunk_model.module.fc.parameters()},
+              {'params': incident_layer.parameters()},
+              {'params': place_layer.parameters()}
+          ],
+          lr=args.lr)
+    elif args.arch =="vit_l_16":
+      optimizer = torch.optim.Adam(
+          [
+              {'params': trunk_model.module.heads.parameters()},
+              {'params': incident_layer.parameters()},
+              {'params': place_layer.parameters()}
+          ],
+          lr=args.lr)
     
     all_models = (trunk_model, incident_layer, place_layer)
 
