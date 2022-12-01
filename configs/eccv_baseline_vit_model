@@ -1,6 +1,7 @@
+batch_size=16
 dataset=pos_and_neg
 activation=sigmoid
-epochs=10
+epochs=5
 arch=vit_l_16
 dataset_train=./subsample_train.json
 dataset_val=./subsample_val.json
