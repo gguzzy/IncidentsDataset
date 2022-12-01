@@ -76,17 +76,17 @@ def get_trunk_model(args):
       # I don't know it i dont write def weights this is random or pretrained
       # model = models.vit_b_16()
       # Freeze the model_parameters except the last one
+      model.heads.append(nn.Linear(1000, 1024))
+      model.heads.append(nn.ReLU())
+      print("**** Added linear layer + Relu activation successfully ****")
       for name, child in model.named_children():
-            # print(f"Name: {name}")
-            # print(f"child: {child}")
+            #print(f"Name: {name}")
+            #print(f"child: {child}")
             if name == "heads":
                 continue
             for params in child.parameters():
                 params.requires_grad = False
       print("**** Model loaded and freezed, except last layer ****")
-      model.heads.append(nn.Linear(1000, 1024))
-      model = nn.Sequential(model, nn.ReLU())
-      print("**** Added linear layer + Relu activation successfully ****")
       return model
 
     if args.pretrained_with_places:
