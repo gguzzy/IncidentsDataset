@@ -116,8 +116,15 @@ def get_trunk_model(args):
         # otherwise load with imagenet weights
         if args.arch == "resnet18":
             model = models.resnet18(pretrained=True)
-            model.fc = nn.Linear(512, 1024)
-            model = nn.Sequential(model, nn.ReLU())
+            for name, child in model.named_children():
+              #print(f"Name: {name}")
+              #print(f"child: {child}")
+              if name=="fc":
+                pass
+                print("Trainable block: ", child)
+              for params in child.parameters():
+                  params.requires_grad = False
+            model.fc = nn.Sequential(nn.Linear(512, 1024), nn.ReLU())
         elif args.arch == "resnet50":
             model = models.resnet50(pretrained=True)
             model.fc = nn.Linear(2048, 1024)
