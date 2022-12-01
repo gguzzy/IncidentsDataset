@@ -190,12 +190,12 @@ def main():
     # https://pytorch.org/docs/stable/optim.html#per-parameter-options
     optimizer = torch.optim.Adam(
         [
-            {'params': trunk_model.parameters()},
+            {'params': trunk_model.module.heads.parameters()},
             {'params': incident_layer.parameters()},
             {'params': place_layer.parameters()}
         ],
         lr=args.lr)
-
+    
     all_models = (trunk_model, incident_layer, place_layer)
 
     if args.mode == "test":
