@@ -7,7 +7,9 @@ import os
 import torch
 import time
 import numpy as np
+
 from collections import defaultdict
+from sklearn.metrics import f1_score
 
 from loss import get_loss
 from utils import get_index_to_incident_mapping, get_index_to_place_mapping
@@ -60,6 +62,33 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+# Object to save stats for F1 score (Open set evaluation)
+class F1Measurements(object):
+    """
+    Computes and stores values to help F1 measures
+    """
+    def __init__(self, threshold_i, threshold_p):
+        self.reset()
+        self.threshold_i, self.threshold_p = threshold_i, threshold_p
+
+    def reset(self):
+      self.total_images = 0
+
+      # Incidents
+      self.cont_mult_label_i = 0
+      self.pred_known_i = []
+      self.real_known_i = []
+      self.unknown_i = 0
+
+      # Places
+      self.cont_mult_label_p = 0
+      self.pred_known_p = []
+      self.real_known_p = []
+      self.unknown_p = 0
+
+      # Stats considering intersection
+      self.cont_both_mult_label = 0
+      self.cont_absoluth_unknown = 0
 
 def batched_index_select(input_value, dim, index):
     # TODO: confirm this code is correct w/ test cases
@@ -157,6 +186,11 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
     top1_num_correct_all, top1_num_total_all = 0, 0
     top5_num_correct_all, top5_num_total_all = 0, 0
 
+    # Variables for initialize F1 measurements
+    sigmoid_layer = torch.nn.Sigmoid() # Apply the sigmoid on the output
+    # The measure ar arbitrary, the optimal threhsold would be somewhere beetwen 0.2-0.6
+    f1measures = F1Measurements(0.3, 0.3)
+
     if args.activation == "softmax":
         # in this case, include "no incident" and "no place"
         ap_incidents = [[] for i in range(len(index_to_incident_mapping) + 1)]
@@ -183,6 +217,54 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
         output = trunk_model(image_v)
         place_output = place_model(output)
         incident_output = incident_model(output)
+
+        # F1 metrics for Open set evaluation (base method)
+        f1measures.total_images += incident_output.shape[0]
+        
+        for i in range(incident_output.shape[0]):
+          # Compute the maximum values out of the sigmoid and memorize the number of positive labels
+          max_incidents_value = torch.max(sigmoid_layer(incident_output[i]))
+          pos_labels_incidents = sum(target_i_v[i])
+          max_places_value = torch.max(sigmoid_layer(place_output[i]))
+          pos_labels_places = sum(target_p_v[i])
+
+          # Prediction check - incidents
+          if (max_incidents_value > f1measures.threshold_i):
+            f1measures.pred_known_i.append(1)
+          else:
+            f1measures.pred_known_i.append(0)
+          
+          # Prediction check - places
+          if (max_places_value > f1measures.threshold_p):
+            f1measures.pred_known_p.append(1)
+          else:
+            f1measures.pred_known_p.append(0)
+
+          # True target check - incidents
+          if (pos_labels_incidents >= 1):
+            f1measures.real_known_i.append(1)
+            if (pos_labels_incidents > 1):
+              f1measures.cont_mult_label_i += 1
+          else:
+            f1measures.real_known_i.append(0)
+
+          # True target check - places
+          if (pos_labels_places >= 1):
+            f1measures.real_known_p.append(1)
+            if (pos_labels_places > 1):
+              f1measures.cont_mult_label_p += 1
+          else:
+            f1measures.real_known_p.append(0)
+          
+          # Load overall stats
+          if (pos_labels_places < 1):
+            f1measures.unknown_p += 1
+          if (pos_labels_incidents < 1):
+            f1measures.unknown_i += 1
+          if ((pos_labels_places > 1) and (pos_labels_incidents > 1)):
+            f1measures.cont_both_mult_label += 1
+          if ((pos_labels_places < 1) and (pos_labels_incidents < 1)):
+            f1measures.cont_absoluth_unknown += 1
 
         # get the loss
         loss, incident_output, place_output = get_loss(args,
@@ -281,6 +363,23 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
                 a_v_place_top1=a_v_place_top1,
                 a_v_incident_top5=a_v_incident_top5,
                 a_v_place_top5=a_v_place_top5))
+
+    # F1 Scores and stats for Open set evaluation
+    # Incidents
+    print(f"\n\nF1 score results for open set evaluations\n")
+    print("Evaluation of Incidents labels:")
+    print(f">Multi-label images percentage: {round(f1measures.cont_mult_label_i/f1measures.total_images, 3)} %")
+    print(f">Unknown images percentage: {round(f1measures.unknown_i/f1measures.total_images, 3)} %")
+    print(f">F1 score ( threshold {f1measures.threshold_i} ): {round(f1_score(f1measures.real_known_i, f1measures.pred_known_i), 3)} %")
+    # Places
+    print("\nEvaluations of Places labels:")
+    print(f">Multi-label images percentage: {round(f1measures.cont_mult_label_p/f1measures.total_images, 3)} %")
+    print(f">Unknown images percentage: {round(f1measures.unknown_p/f1measures.total_images, 3)} %")
+    print(f">F1 score ( threshold {f1measures.threshold_p} ): {round(f1_score(f1measures.real_known_p, f1measures.pred_known_p), 3)} %")
+    # Both
+    print("\nOverall images stats about multi-label:")
+    print(f">Unkonwn images percentage: {round(f1measures.cont_absoluth_unknown/f1measures.total_images, 3)} %")
+    print(f">Both multi-label images percentage: {round(f1measures.cont_both_mult_label/f1measures.total_images, 3)} %")
 
     print("\nCalculating APs\n")
     # threshold are [0.0, 0.1, ..., 1.0] (11 values)
