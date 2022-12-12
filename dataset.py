@@ -257,7 +257,7 @@ def get_dataset(args,
         shuffle = True
         use_all = False
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
+            transforms.RandomResizedCrop(384),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize
@@ -267,8 +267,8 @@ def get_dataset(args,
         shuffle = False
         use_all = True
         transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
+            transforms.Resize(416),
+            transforms.CenterCrop(384),
             transforms.ToTensor(),
             normalize,
         ])
