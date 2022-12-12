@@ -199,7 +199,7 @@ def main():
     elif args.arch =="vit_l_16":
       optimizer = torch.optim.Adam(
           [
-              {'params': trunk_model.module.heads.parameters()},
+              {'params': trunk_model.module.head.parameters()},
               {'params': incident_layer.parameters()},
               {'params': place_layer.parameters()}
           ],
