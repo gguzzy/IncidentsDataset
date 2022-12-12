@@ -1,21 +1,22 @@
 """models.py
 """
+from PIL import Image
+from torch.nn import functional as F
 import torch
 import torch.nn as nn
 import torch.nn.parallel
 import torch.utils.data as data
 import torch.backends.cudnn as cudnn
-from torch.nn import functional as F
 import torch.optim
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
-
 import numpy as np
 import os
-
-from PIL import Image
+import wget
+import timm
+import tensorflow as tf
 
 # same loader used during training
 inference_loader = transforms.Compose([
@@ -69,21 +70,26 @@ class FilenameDataset(data.Dataset):
 
 # Modified by US for the ViT part
 def get_trunk_model(args):
-    if args.arch == "vit_l_16":
-      # Pretrained ViT model from ImageNet1K
-      model = models.vit_l_16(weights="IMAGENET1K_V1")
-      print("**** Load ViT pre-trained on ImageNet1K ****")
-      # model = models.vit_b_16() #SMALLER MODEL
-      # Freeze the model_parameters except the last one
-      model.heads.append(nn.Linear(1000, 1024))
-      model.heads.append(nn.ReLU())
-      print("**** Added linear layer + Relu activation successfully ****")
+    if args.arch == "vit_b_16":
+      link_root = "https://storage.googleapis.com/vit_models/augreg/"
+      filename = 'B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz'
+      model_name = 'vit_base_patch16_384'
+      model = timm.create_model(model_name, num_classes=1024)
+
+      # Non-default checkpoints need to be loaded from local files.
+      if not tf.io.gfile.exists(filename):
+        print('Pre-trained weights not found. Downloading...')
+        print(link_root+filename)
+        wget.download(link_root + filename)
+      timm.models.load_checkpoint(model, filename)
+      print("**** Loaded ViT pre-trained ****")
+
       for name, child in model.named_children():
             #print(f"Name: {name}")
             #print(f"child: {child}")
-            if name == "heads":
-                pass
+            if name.startswith("head"):
                 print("Trainable block: ", child)
+                break
             for params in child.parameters():
                 params.requires_grad = False
       print("**** Model loaded and freezed, except last layer ****")
