@@ -7,6 +7,12 @@ Helpful resources:
     - https://github.com/pytorch/examples/blob/master/imagenet/main.py
 """
 
+from utils import save_checkpoint
+from dataset import get_dataset
+from parser import get_parser, get_postprocessed_args
+from loss import get_loss
+import architectures as architectures
+from metrics import AverageMeter, accuracy, validate
 from datetime import datetime
 from tensorboardX import SummaryWriter
 from torch.nn import functional as F
@@ -19,12 +25,6 @@ import torch.nn as nn
 
 cudnn.benchmark = True
 
-from metrics import AverageMeter, accuracy, validate
-import architectures as architectures
-from loss import get_loss
-from parser import get_parser, get_postprocessed_args
-from dataset import get_dataset
-from utils import save_checkpoint
 
 def train(args, train_loader, all_models, optimizer, epoch):
     """
@@ -80,9 +80,9 @@ def train(args, train_loader, all_models, optimizer, epoch):
 
         # measure accuracy and record loss
         incident_prec1, incident_prec5 = accuracy(incident_output.data, target_d_v, topk=1), \
-                                         accuracy(incident_output.data, target_d_v, topk=5)
+            accuracy(incident_output.data, target_d_v, topk=5)
         place_prec1, place_prec5 = accuracy(place_output.data, target_p_v, topk=1), \
-                                   accuracy(place_output.data, target_p_v, topk=5)
+            accuracy(place_output.data, target_p_v, topk=5)
         a_v_losses.update(loss.data, input_data.size(0))
         a_v_place_top1.update(place_prec1, input_data.size(0))
         a_v_incident_top1.update(incident_prec1, input_data.size(0))
@@ -108,15 +108,15 @@ def train(args, train_loader, all_models, optimizer, epoch):
                   'Place Prec@1 {a_v_place_top1.val:.3f} ({a_v_place_top1.avg:.3f})\t'
                   'Place Prec@5 {a_v_place_top5.val:.3f} ({a_v_place_top5.avg:.3f})\t'
                   'Incident Prec@5 {a_v_incident_top5.val:.3f} ({a_v_incident_top5.avg:.3f})\t'.format(
-                epoch, batch_iteration,
-                len(train_loader),
-                a_v_batch_time=a_v_batch_time,
-                a_v_data_time=a_v_data_time,
-                a_v_losses=a_v_losses,
-                a_v_incident_top1=a_v_incident_top1,
-                a_v_place_top1=a_v_place_top1,
-                a_v_incident_top5=a_v_incident_top5,
-                a_v_place_top5=a_v_place_top5))
+                      epoch, batch_iteration,
+                      len(train_loader),
+                      a_v_batch_time=a_v_batch_time,
+                      a_v_data_time=a_v_data_time,
+                      a_v_losses=a_v_losses,
+                      a_v_incident_top1=a_v_incident_top1,
+                      a_v_place_top1=a_v_place_top1,
+                      a_v_incident_top5=a_v_incident_top5,
+                      a_v_place_top5=a_v_place_top5))
         # TODO: add more metrics here
         writer.add_scalar('Loss/train', a_v_losses.avg,
                           batch_iteration + epoch * len(train_loader))
@@ -189,22 +189,30 @@ def main():
     # define the optimizer
     # https://pytorch.org/docs/stable/optim.html#per-parameter-options
     if args.arch == "resnet18":
-      optimizer = torch.optim.Adam(
-          [
-              {'params': trunk_model.module.fc.parameters()},
-              {'params': incident_layer.parameters()},
-              {'params': place_layer.parameters()}
-          ],
-          lr=args.lr)
-    elif args.arch =="vit_l_16":
-      optimizer = torch.optim.Adam(
-          [
-              {'params': trunk_model.module.head.parameters()},
-              {'params': incident_layer.parameters()},
-              {'params': place_layer.parameters()}
-          ],
-          lr=args.lr)
-    
+        optimizer = torch.optim.Adam(
+            [
+                {'params': trunk_model.module.fc.parameters()},
+                {'params': incident_layer.parameters()},
+                {'params': place_layer.parameters()}
+            ],
+            lr=args.lr)
+    elif args.arch == "vit_l_16":
+        optimizer = torch.optim.Adam(
+            [
+                {'params': trunk_model.module.head.parameters()},
+                {'params': incident_layer.parameters()},
+                {'params': place_layer.parameters()}
+            ],
+            lr=args.lr)
+    elif args.arch == "vit_b_16":
+        optimizer = torch.optim.Adam(
+            [
+                {'params': trunk_model.module.head.parameters()},
+                {'params': incident_layer.parameters()},
+                {'params': place_layer.parameters()}
+            ],
+            lr=args.lr)
+
     all_models = (trunk_model, incident_layer, place_layer)
 
     if args.mode == "test":
@@ -227,17 +235,15 @@ def main():
     train_loader = get_dataset(args, is_train=True)
     print("loading val_loader")
     val_loader = get_dataset(args, is_train=False)  # TODO: don't shuffle
-    
+
     for epoch in range(0, args.epochs):
 
         # train for an epoch
         train(args, train_loader, all_models, optimizer, epoch)
-       
-        
+
         # evaluate on validation set
         print("Accuracy from val loader")
         mean_ap = validate(args, val_loader, all_models, epoch=epoch, writer=writer)
-        
 
         # remember best prec@1 and save checkpoint
         is_best = mean_ap > best_mean_ap
