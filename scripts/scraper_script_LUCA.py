@@ -12,7 +12,7 @@ def get_parser():
                         type=str,
                         help="Insert the absolut path of the folder containing the json file containing the images info.")
     parser.add_argument("--name_file",
-                        default="eccv_val.json",
+                        default="multi_label_train.json",
                         type=str,
                         help="Insert the name of the json file containing the images info.")
     parser.add_argument("--images_folder",
@@ -20,7 +20,7 @@ def get_parser():
                         type=str,
                         help="The images will be created in the 'path folder'.")
     parser.add_argument("--n_images",
-                        default=10,
+                        default=1000000,
                         type=int,
                         help="How many images you want to check.")                    
     return parser
