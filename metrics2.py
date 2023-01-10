@@ -189,7 +189,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
     # Variables for initialize F1 measurements
     sigmoid_layer = torch.nn.Sigmoid() # Apply the sigmoid on the output
     # The measure ar arbitrary, the optimal threhsold would be somewhere beetwen 0.2-0.6
-    f1measures = F1Measurements(0., 0.4)
+    f1measures = F1Measurements(0.4, 0.4)
 
     if args.activation == "softmax":
         # in this case, include "no incident" and "no place"
