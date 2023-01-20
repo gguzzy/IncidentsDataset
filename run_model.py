@@ -212,6 +212,14 @@ def main():
                 {'params': place_layer.parameters()}
             ],
             lr=args.lr)
+    elif args.arch == "resnet50":
+        optimizer = torch.optim.Adam(
+            [
+                {'params': trunk_model.module.fc.parameters()},
+                {'params': incident_layer.parameters()},
+                {'params': place_layer.parameters()}
+            ],
+            lr=args.lr)
 
     all_models = (trunk_model, incident_layer, place_layer)
 
