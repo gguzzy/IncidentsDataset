@@ -16,9 +16,9 @@ file_id_to_filename = {
     #"1DbWnki2352JueF_DrnVmSVvo6bAPlf5W": "eccv_final_model_place.pth.tar",
     "1SZbOj5bqJXc0p7ufFrGcD0KQdCFqMj8c": "resnet50_pretrain_im21k.pth"
 }
-
+dir_path = os.path.dirname(os.path.realpath(__file__))
 for file_id, filename in tqdm(file_id_to_filename.items()):
     gdd.download_file_from_google_drive(
         file_id=file_id,
-        dest_path=os.path.join("pretrained_weights", filename),
+        dest_path=os.path.join(dir_path, "pretrained_weights", filename),
     )
