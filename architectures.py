@@ -71,6 +71,32 @@ class FilenameDataset(data.Dataset):
 # Modified by US for the ViT part
 def get_trunk_model(args):
     
+    #VIT-B-16 TRIAL UNFREEZED
+    if args.arch == "vit_b_16":
+      link_root = "https://storage.googleapis.com/vit_models/augreg/"
+      filename = 'B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz'
+      model_name = 'vit_base_patch16_384'
+      model = timm.create_model(model_name, num_classes=1024)
+
+      # Non-default checkpoints need to be loaded from local files.
+      if not tf.io.gfile.exists(filename):
+        print('Pre-trained weights not found. Downloading...')
+        print(link_root+filename)
+        wget.download(link_root + filename)
+      timm.models.load_checkpoint(model, filename)
+      print("**** Loaded ViT pre-trained ****")
+      
+      for param in model.parameters():
+          param.requires_grad = False
+      for block in model.blocks:
+            for param in block.attn.parameters():
+                param.requires_grad = True
+      for param in model.head.parameters():
+            param.requires_grad = True
+      print("**** Model loaded and freezed, except MHSA and last linear ****")
+      return model
+
+
     #VIT-B-16
     if args.arch == "vit_b_16":
       link_root = "https://storage.googleapis.com/vit_models/augreg/"
