@@ -71,6 +71,32 @@ class FilenameDataset(data.Dataset):
 # Modified by US for the ViT part
 def get_trunk_model(args):
     
+    #VIT-B-16 TRIAL UNFREEZED
+    if args.arch == "vit_b_16":
+      link_root = "https://storage.googleapis.com/vit_models/augreg/"
+      filename = 'B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz'
+      model_name = 'vit_base_patch16_384'
+      model = timm.create_model(model_name, num_classes=1024)
+
+      # Non-default checkpoints need to be loaded from local files.
+      if not tf.io.gfile.exists(filename):
+        print('Pre-trained weights not found. Downloading...')
+        print(link_root+filename)
+        wget.download(link_root + filename)
+      timm.models.load_checkpoint(model, filename)
+      print("**** Loaded ViT pre-trained ****")
+      
+      for param in model.parameters():
+          param.requires_grad = False
+      for block in model.blocks:
+            for param in block.attn.parameters():
+                param.requires_grad = True
+      for param in model.head.parameters():
+            param.requires_grad = True
+      print("**** Model loaded and freezed, except MHSA and last linear ****")
+      return model
+
+
     #VIT-B-16
     if args.arch == "vit_b_16":
       link_root = "https://storage.googleapis.com/vit_models/augreg/"
@@ -85,7 +111,6 @@ def get_trunk_model(args):
         wget.download(link_root + filename)
       timm.models.load_checkpoint(model, filename)
       print("**** Loaded ViT pre-trained ****")
-
       for name, child in model.named_children():
             #print(f"Name: {name}")
             #print(f"child: {child}")
@@ -146,6 +171,8 @@ def get_trunk_model(args):
             model = nn.Sequential(model, nn.ReLU())
         return model
     else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        dir_path = os.path.dirname(os.path.realpath(__file__))
         print("loading imagenet weights for pretraining")
         # otherwise load with imagenet weights
         if args.arch == "resnet18":
@@ -159,10 +186,40 @@ def get_trunk_model(args):
               for params in child.parameters():
                   params.requires_grad = False
             model.fc = nn.Sequential(nn.Linear(512, 1024), nn.ReLU())
+
         elif args.arch == "resnet50":
-            model = models.resnet50(pretrained=True)
-            model.fc = nn.Linear(2048, 1024)
-            model = nn.Sequential(model, nn.ReLU())
+            print("*** Using ResNet50 with Imagenet21k pre-trained weights ***")
+            
+	    # START MODIFICATION
+            model = models.resnet50(weights=None)
+            model_file = os.path.join(dir_path, "pretrained_weights/resnet50_pretrain_im21k.pth")
+            original_dict = torch.load(model_file, map_location=device)["state_dict"]
+            state_dict = {}
+            # Compose the state_dict (mismatch between layers)
+            for key in original_dict.keys():
+              if key.split(".")[-1] != 'num_batches_tracked':
+                state_dict[key] = original_dict[key]
+
+            # DEBUG 
+            #filename = '/content/IncidentsDataset/pretrained_weights/resnet50_places365.pth.tar'
+            #checkpoint_example = torch.load(filename, map_location=device)
+            #state_dict_tmp = {str.replace(k, 'module.', ''): v for k, v in checkpoint_example['state_dict'].items()}
+            #print(state_dict_tmp.keys())
+
+            # Load random tensor and vector to compose the last layer of the resnet (fc was modified from the repository, only the final number of classes)
+            state_dict["fc.weight"]= torch.rand(size=(1000, 2048))
+            state_dict["fc.bias"]= torch.rand(size=(1000,))
+            model.load_state_dict(state_dict)
+            print("Model loaded correctly!")
+            for name, child in model.named_children():
+              if name=="fc":
+                print(f"Trainable block: {child}")
+                break
+              for params in child.parameters():
+                  params.requires_grad = False
+            #model.fc = nn.Linear(2048, 1024)
+            #model = nn.Sequential(model, nn.ReLU())
+            model.fc = nn.Sequential(nn.Linear(2048, 1024), nn.ReLU())
         return model
 
 

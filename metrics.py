@@ -9,7 +9,7 @@ import time
 import numpy as np
 
 from collections import defaultdict
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score,accuracy_score
 
 from loss import get_loss
 from utils import get_index_to_incident_mapping, get_index_to_place_mapping
@@ -189,7 +189,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
     # Variables for initialize F1 measurements
     sigmoid_layer = torch.nn.Sigmoid() # Apply the sigmoid on the output
     # The measure ar arbitrary, the optimal threhsold would be somewhere beetwen 0.2-0.6
-    f1measures = F1Measurements(0.3, 0.3)
+    f1measures = F1Measurements(0.4, 0.4)
 
     if args.activation == "softmax":
         # in this case, include "no incident" and "no place"
@@ -366,6 +366,9 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
 
     # F1 Scores and stats for Open set evaluation
     # Incidents
+    print(f"\n\nAccuracy score results for open set evaluations\n")
+    print("Evaluation of Incidents labels:")
+    print(f">Accuracy score ( threshold {f1measures.threshold_i} ): {round(accuracy_score(f1measures.real_known_i, f1measures.pred_known_i), 3)} %")
     print(f"\n\nF1 score results for open set evaluations\n")
     print("Evaluation of Incidents labels:")
     print(f">Multi-label images percentage: {round(f1measures.cont_mult_label_i/f1measures.total_images, 3)} %")

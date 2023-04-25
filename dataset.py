@@ -13,6 +13,7 @@ from tqdm import tqdm
 import torchvision.transforms as transforms
 from collections import defaultdict
 import copy
+from torchvision.datasets import CIFAR100
 
 from utils import (
     get_place_to_index_mapping,
@@ -95,6 +96,64 @@ def get_split_dictionary(data):
                     "places": {p: pv}
                 })
     return splits
+
+
+# Class TestDataset build for test of Cifar100 and Oxford pet III
+class TestDataset(Dataset):
+    """A Pytorch dataset to simplify the Test implementation of default dataset
+
+    Args:
+        transform: Transformer used to process the images (from PIL to Tensor format)
+        
+    Attributes:
+        all_data: List used to retrieve the single element (data plus all the vectors)
+    """
+
+    def __init__(self, transform=None):
+
+        self.all_data = []
+        print("Adding test images (only incidents F1-score additional performances)")
+
+        # Parameter for the images folder
+        folder_path = "./data"
+        test_data = CIFAR100(root=folder_path, train=False, download=True)
+
+        print(f"Zipped folder saved in {folder_path}")
+
+        # This class is supposed to work with "sigmoid" layer (set all to 0)
+        place_vector = np.zeros(49)
+        incident_vector = np.zeros(43)
+        place_weight_vector = np.zeros(49)
+        incident_weight_vector = np.zeros(43)
+
+        # PIL images in format: (PIL Image, label)
+        for image in test_data:
+
+          item = (image[0], place_vector, incident_vector,
+                        place_weight_vector, incident_weight_vector)
+          self.all_data.append(item)
+
+        print("number items: {}".format(len(self.all_data)))
+        # If there is need of a conversion (image loader)
+        #self.image_loader = image_loader
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.all_data)
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+        Returns:
+            tuple: incident_label_item (list), no_incident_label_item (list)
+        """
+        my_item = list(self.all_data[index])
+        img = my_item[0]
+        if self.transform is not None:
+            img = self.transform(img)
+        my_item[0] = img
+        return my_item
 
 
 class IncidentDataset(Dataset):
@@ -243,6 +302,29 @@ def get_dataset(args,
         incidents_images = incidents_images_temp
     else:
         if is_test == False:  # validation images
+
+            # Addition for testing cifar100 and Oxford pet
+            if args.dataset_val == "cifar100":
+              # Duplicate of variables
+              normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+              transform = transforms.Compose([
+              transforms.Resize(416),
+              transforms.CenterCrop(384),
+              transforms.ToTensor(),
+              normalize])
+              # Init custom dataset
+              dataset = TestDataset(transform)
+              # Init and return the standard loader
+              loader = torch.utils.data.DataLoader(
+              dataset,
+              batch_size=args.batch_size,
+              shuffle=False,
+              num_workers=args.workers,
+              pin_memory=True
+              )
+              return loader
+              
             incidents_images = get_loaded_json_file(args.dataset_val)
         else:  # test images
             incidents_images = get_loaded_json_file(args.dataset_test)
